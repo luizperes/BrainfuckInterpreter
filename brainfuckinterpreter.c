@@ -20,7 +20,8 @@ int main(int argc, char** argv)
   char *ptr = array;  
   Stack *lastOpenBracket = NULL;
   
-  for(int c = fgetc(f); c != EOF; c = fgetc(f))
+  int c = fgetc(f); 
+  while(c != EOF)
   {
     switch(c)
     {
@@ -97,10 +98,12 @@ int main(int argc, char** argv)
       case ']':
       {
         fsetpos(f, lastOpenBracket->positionFile);
-        ungetc('[', f); 
-        break;
+        c = '[';
+        continue;
       }
     }  
+
+    c = fgetc(f);
   }
 
   fclose(f);
