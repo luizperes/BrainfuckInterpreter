@@ -3,7 +3,8 @@
 
 typedef struct stack
 {
-  fpos_t *positionFile;
+  fpos_t *positionBeginBracket;
+  fpos_t *positionEndBracket;
   struct stack *previous;
 }Stack;
 
@@ -18,7 +19,7 @@ int main(int argc, char** argv)
   
   char array[30000] = {0};
   char *ptr = array;  
-  Stack *lastOpenBracket = NULL;
+  Stack *lastBeginBracket = NULL;
   
   int c = fgetc(f); 
   while(c != EOF)
@@ -57,47 +58,53 @@ int main(int argc, char** argv)
       }
       case '[':
       {
+        Stack *auxPtr = lastBeginBracket;
+ 
         if (*ptr == '\0')
         {
-          while(c != ']' && c != EOF)
-            c = fgetc(f);
-          
-          if (lastOpenBracket != NULL)
+          if (lastBeginBracket == NULL || lastBeginBracket->positionEndBracket == NULL)
+          {  
+            while(c != ']' && c != EOF)
+              c = fgetc(f);
+          }
+          else
           {
-            fpos_t *curBracket = (fpos_t *) malloc(sizeof(fpos_t));
-            fgetpos(f, curBracket);
-            if (curBracket == lastOpenBracket->positionFile)
-            {
-              Stack *auxPtr = lastOpenBracket;
-              lastOpenBracket = lastOpenBracket->previous;
-              free(auxPtr);
-            }
+            fsetpos(f, lastBeginBracket->positionEndBracket);
           }
 
+          if (auxPtr != NULL)
+          {
+            lastBeginBracket = lastBeginBracket->previous;
+            free(auxPtr);
+          }
+          
           break;
         }
+        else if (lastBeginBracket != NULL)
+        {
+          fpos_t *curBracket = (fpos_t *) malloc(sizeof(fpos_t));
+          fgetpos(f, curBracket);
+          Stack *searchAuxPtr = lastBeginBracket;
+          while(searchAuxPtr != NULL && *curBracket != *searchAuxPtr->positionBeginBracket)
+            searchAuxPtr = searchAuxPtr->previous;
+          free(curBracket);
+          
+          if (searchAuxPtr != NULL)
+            break;
+        }
 
-        if (lastOpenBracket == NULL)
-        {
-          lastOpenBracket = (Stack *) malloc(sizeof(Stack));
-          lastOpenBracket->positionFile = (fpos_t *) malloc(sizeof(fpos_t));
-          fgetpos(f, lastOpenBracket->positionFile);
-          lastOpenBracket->previous = NULL;
-        }
-        else
-        {
-          Stack *auxPtr = lastOpenBracket;
-          lastOpenBracket = (Stack *) malloc(sizeof(Stack));
-          lastOpenBracket->positionFile = (fpos_t *) malloc(sizeof(fpos_t));
-          fgetpos(f, lastOpenBracket->positionFile);
-          lastOpenBracket->previous = auxPtr;
-        }
+        lastBeginBracket = (Stack *) malloc(sizeof(Stack));
+        lastBeginBracket->positionBeginBracket = (fpos_t *) malloc(sizeof(fpos_t));
+        lastBeginBracket->positionEndBracket = (fpos_t *) malloc(sizeof(fpos_t));
+        fgetpos(f, lastBeginBracket->positionBeginBracket);
+        lastBeginBracket->previous = auxPtr;
         
         break;
       }
       case ']':
       {
-        fsetpos(f, lastOpenBracket->positionFile);
+        fgetpos(f, lastBeginBracket->positionEndBracket);
+        fsetpos(f, lastBeginBracket->positionBeginBracket);
         c = '[';
         continue;
       }
