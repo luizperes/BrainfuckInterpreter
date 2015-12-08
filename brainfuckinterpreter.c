@@ -75,6 +75,8 @@ int main(int argc, char** argv)
           if (auxPtr != NULL)
           {
             lastBeginBracket = lastBeginBracket->previous;
+            free(auxPtr->positionBeginBracket);
+            free(auxPtr->positionEndBracket);
             free(auxPtr);
           }
           
