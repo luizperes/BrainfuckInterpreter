@@ -87,7 +87,7 @@ int main(int argc, char** argv)
           fpos_t *curBracket = (fpos_t *) malloc(sizeof(fpos_t));
           fgetpos(f, curBracket);
           Stack *searchAuxPtr = lastBeginBracket;
-          while(searchAuxPtr != NULL && *curBracket != *searchAuxPtr->positionBeginBracket)
+          while(searchAuxPtr != NULL && (*curBracket).__pos != (*searchAuxPtr->positionBeginBracket).__pos)
             searchAuxPtr = searchAuxPtr->previous;
           free(curBracket);
           
