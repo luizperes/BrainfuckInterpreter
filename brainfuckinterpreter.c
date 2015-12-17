@@ -7,12 +7,18 @@
   #define CHECK_BRACKETS (*curBracket).__pos != (*searchAuxPtr->positionBeginBracket).__pos
 #endif
 
-typedef struct stack
+typedef struct _bf_stack
 {
   fpos_t *positionBeginBracket;
   fpos_t *positionEndBracket;
   struct stack *previous;
 }Stack;
+
+typedef union _bf_double_byte
+{
+  short value;
+  char charValue;
+}bf_double_byte;
 
 int main(int argc, char** argv)
 {
@@ -23,8 +29,8 @@ int main(int argc, char** argv)
   if (f == NULL)
     return -1;
   
-  char array[30000] = {0};
-  char *ptr = array;  
+  bf_double_byte array[30000] = {0};
+  bf_double_byte *ptr = array;  
   Stack *lastBeginBracket = NULL;
   
   int c = fgetc(f); 
@@ -44,29 +50,29 @@ int main(int argc, char** argv)
       }
       case '+':
       {
-        ++*ptr;
+        ++((*ptr).value);
         break;
       }
       case '-':
       {
-        --*ptr;
+        --((*ptr).value);
         break;
       }
       case '.':
       {
-        putchar(*ptr);
+        putchar((*ptr).charValue);
         break;
       }
       case ',':
       {
-        *ptr = getchar();
+        (*ptr).charValue = getchar();
         break;
       }
       case '[':
       {
         Stack *auxPtr = lastBeginBracket;
  
-        if (*ptr == '\0')
+        if ((*ptr).value == '\0')
         {
           if (lastBeginBracket == NULL || lastBeginBracket->positionEndBracket == NULL)
           {  
@@ -80,7 +86,7 @@ int main(int argc, char** argv)
 
           if (auxPtr != NULL)
           {
-            lastBeginBracket = lastBeginBracket->previous;
+            lastBeginBracket = (void *) lastBeginBracket->previous;
             free(auxPtr->positionBeginBracket);
             free(auxPtr->positionEndBracket);
             free(auxPtr);
@@ -94,7 +100,7 @@ int main(int argc, char** argv)
           fgetpos(f, curBracket);
           Stack *searchAuxPtr = lastBeginBracket;
           while(searchAuxPtr != NULL && CHECK_BRACKETS)
-            searchAuxPtr = searchAuxPtr->previous;
+            searchAuxPtr = (void *) searchAuxPtr->previous;
           free(curBracket);
           
           if (searchAuxPtr != NULL)
@@ -105,7 +111,7 @@ int main(int argc, char** argv)
         lastBeginBracket->positionBeginBracket = (fpos_t *) malloc(sizeof(fpos_t));
         lastBeginBracket->positionEndBracket = (fpos_t *) malloc(sizeof(fpos_t));
         fgetpos(f, lastBeginBracket->positionBeginBracket);
-        lastBeginBracket->previous = auxPtr;
+        lastBeginBracket->previous = (void *) auxPtr;
         
         break;
       }
@@ -118,7 +124,7 @@ int main(int argc, char** argv)
       }
       case '#':
       {
-        printf("Pointer pos: %lu value: %i\n", (ptr - array), *ptr); 
+        printf("Pointer pos: %lu value: %i\n", (ptr - array), (*ptr).value); 
       }
     }  
 
