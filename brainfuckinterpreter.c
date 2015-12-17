@@ -116,6 +116,10 @@ int main(int argc, char** argv)
         c = '[';
         continue;
       }
+      case '#':
+      {
+        printf("Pointer pos: %lu value: %i\n", (ptr - array), *ptr); 
+      }
     }  
 
     c = fgetc(f);
