@@ -63,6 +63,11 @@ int main(int argc, char** argv)
         putchar((*ptr).charValue);
         break;
       }
+      case '!':
+      {
+        printf("%.2f", (*ptr).value / (float)100);
+        break;
+      }
       case ',':
       {
         (*ptr).charValue = getchar();
