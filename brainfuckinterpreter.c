@@ -2,9 +2,9 @@
 #include <stdlib.h>
 
 #ifdef __llvm__
-  #define CHECK_BRACKETS *curBracket != *searchAuxPtr->positionBeginBracket 
+  #define POS_SUFIX  
 #else
-  #define CHECK_BRACKETS (*curBracket).__pos != (*searchAuxPtr->positionBeginBracket).__pos
+  #define POS_SUFIX .__pos
 #endif
 
 typedef struct _bf_stack
@@ -104,7 +104,7 @@ int main(int argc, char** argv)
           fpos_t *curBracket = (fpos_t *) malloc(sizeof(fpos_t));
           fgetpos(f, curBracket);
           Stack *searchAuxPtr = lastBeginBracket;
-          while(searchAuxPtr != NULL && CHECK_BRACKETS)
+          while(searchAuxPtr != NULL && (*curBracket)POS_SUFIX != (*searchAuxPtr->positionBeginBracket)POS_SUFIX)
             searchAuxPtr = (void *) searchAuxPtr->previous;
           free(curBracket);
           
